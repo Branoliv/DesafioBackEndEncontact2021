@@ -2,11 +2,10 @@
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data;
 using System.Text;
 using System.Threading.Tasks;
-using TesteBackendEnContact.Core.Domain.ContactBook.Company;
-using TesteBackendEnContact.Core.Interface.ContactBook.Company;
+using TesteBackendEnContact.Core.Domain.Entities;
 using TesteBackendEnContact.Database;
 using TesteBackendEnContact.Repository.Interface;
 
@@ -16,76 +15,84 @@ namespace TesteBackendEnContact.Repository
     {
         private readonly DatabaseConfig databaseConfig;
 
+
         public CompanyRepository(DatabaseConfig databaseConfig)
         {
             this.databaseConfig = databaseConfig;
         }
 
-        public async Task<ICompany> SaveAsync(ICompany company)
-        {
-            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-            var dao = new CompanyDao(company);
-
-            if (dao.Id == 0)
-                dao.Id = await connection.InsertAsync(dao);
-            else
-                await connection.UpdateAsync(dao);
-
-            return dao.Export();
-        }
 
         public async Task DeleteAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            var state = connection.State;
+
+            if (ConnectionState.Closed.Equals(state))
+                connection.Open();
+
             using var transaction = connection.BeginTransaction();
 
             var sql = new StringBuilder();
             sql.AppendLine("DELETE FROM Company WHERE Id = @id;");
             sql.AppendLine("UPDATE Contact SET CompanyId = null WHERE CompanyId = @id;");
 
-            await connection.ExecuteAsync(sql.ToString(), new { id }, transaction);
+            var result = await connection.ExecuteAsync(sql.ToString(), new { id }, transaction);
+
+            var x = transaction.IsolationLevel;
+            transaction.Commit();
+
         }
 
-        public async Task<IEnumerable<ICompany>> GetAllAsync()
+        public async Task<IEnumerable<Company>> GetAllAsync(int pageNumber, int quantityItemsList)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            var query = "SELECT * FROM Company";
-            var result = await connection.QueryAsync<CompanyDao>(query);
+            var query = "SELECT * FROM Company LIMIT @quantityItemsList OFFSET @OffSet;";
+            var result = await connection.QueryAsync<Company>(query, new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList });
 
-            return result?.Select(item => item.Export());
+            return result;
         }
 
-        public async Task<ICompany> GetAsync(int id)
+        public async Task<Company> GetAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            var query = "SELECT * FROM Conpany where Id = @id";
-            var result = await connection.QuerySingleOrDefaultAsync<CompanyDao>(query, new { id });
+            var query = "SELECT * FROM Company where Id = @id";
+            var result = await connection.QuerySingleOrDefaultAsync<Company>(query, new { id });
 
-            return result?.Export();
+            return result;
         }
-    }
 
-    [Table("Company")]
-    public class CompanyDao : ICompany
-    {
-        [Key]
-        public int Id { get; set; }
-        public int ContactBookId { get; set; }
-        public string Name { get; set; }
-
-        public CompanyDao()
+        public async Task<int> InsertAsync(Company company)
         {
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            return await connection.InsertAsync(company);
         }
 
-        public CompanyDao(ICompany company)
+        public async Task<bool> UpdateAsync(Company company)
         {
-            Id = company.Id;
-            ContactBookId = company.ContactBookId;
-            Name = company.Name;
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            return await connection.UpdateAsync(company);
         }
 
-        public ICompany Export() => new Company(Id, ContactBookId, Name);
+        public async Task<int> CountContactBookInCompanys(int contactBookId)
+        {
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+
+            var query = "SELECT COUNT(*) FROM Company WHERE ContactBookId = @contactBookId";
+
+            var result = await connection.QueryFirstAsync<int>(query.ToString(), new { contactBookId });
+
+            return result;
+        }
+
+        public async Task<IEnumerable<Company>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList)
+        {
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            var query = "SELECT * FROM Company WHERE ContactBookId = @contactBookId LIMIT @quantityItemsList OFFSET @OffSet;";
+            var result = await connection.QueryAsync<Company>(query, new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList, contactBookId });
+
+            return result;
+        }
     }
 }

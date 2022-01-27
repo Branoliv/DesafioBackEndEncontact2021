@@ -2,10 +2,8 @@
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using TesteBackendEnContact.Core.Domain.ContactBook;
-using TesteBackendEnContact.Core.Interface.ContactBook;
+using TesteBackendEnContact.Core.Domain.Entities;
 using TesteBackendEnContact.Database;
 using TesteBackendEnContact.Repository.Interface;
 
@@ -21,72 +19,50 @@ namespace TesteBackendEnContact.Repository
         }
 
 
-        public async Task<IContactBook> SaveAsync(IContactBook contactBook)
+        public async Task<int> InsertAsync(ContactBook contactBook)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-            var dao = new ContactBookDao(contactBook);
-
-            dao.Id = await connection.InsertAsync(dao);
-
-            return dao.Export();
+            return await connection.InsertAsync(contactBook);
         }
 
+        public async Task<bool> UpdateAsync(ContactBook contactBook)
+        {
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            return await connection.UpdateAsync(contactBook);
+        }
 
         public async Task DeleteAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            // TODO
-            var sql = "";
+            // TODO 
+            var sql = "DELETE FROM ContactBook  WHERE Id = @id";
 
-            await connection.ExecuteAsync(sql);
+            await connection.ExecuteAsync(sql.ToString(), new { id });
         }
 
+        public async Task<IEnumerable<ContactBook>> GetAllAsync(int pageNumber, int quantityItemsList)
+        {
+            //var query = string.Format("SELECT {0} FROM (SELECT ROW_NUMBER() OVER (ORDER BY {2}) AS Row, {0} FROM {3} {4}) AS Paged ", columns, pageSize, orderBy, TableName, where);
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
+            
+            var query = "SELECT * FROM ContactBook LIMIT @quantityItemsList OFFSET @OffSet;";
+            var result = await connection.QueryAsync<ContactBook>(query, new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList });
 
+            return result;
+        }
 
-        public async Task<IEnumerable<IContactBook>> GetAllAsync()
+        public async Task<ContactBook> GetAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            var query = "SELECT * FROM ContactBook";
-            var result = await connection.QueryAsync<ContactBookDao>(query);
+            var query = "SELECT * FROM ContactBook WHERE Id = @id";
+            var result = await connection.QuerySingleOrDefaultAsync<ContactBook>(query, new { id });
 
-            var returnList = new List<IContactBook>();
-
-            foreach (var AgendaSalva in result.ToList())
-            {
-                IContactBook Agenda = new ContactBook(AgendaSalva.Id, AgendaSalva.Name.ToString());
-                returnList.Add(Agenda);
-            }
-
-            return returnList.ToList();
-        }
-        public async Task<IContactBook> GetAsync(int id)
-        {
-            var list = await GetAllAsync();
-
-            return list.ToList().Where(item => item.Id == id).FirstOrDefault();
-        }
-    }
-
-    [Table("ContactBook")]
-    public class ContactBookDao : IContactBook
-    {
-        [Key]
-        public int Id { get; set; }
-        public string Name { get; set; }
-
-        public ContactBookDao()
-        {
+            return result;
         }
 
-        public ContactBookDao(IContactBook contactBook)
-        {
-            Id = contactBook.Id;
-            Name = Name;
-        }
-
-        public IContactBook Export() => new ContactBook(Id, Name);
+        
     }
 }

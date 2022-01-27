@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TesteBackendEnContact</name>
+    </assembly>
+    <members>
+        <member name="M:TesteBackendEnContact.Controllers.CompanyController.AddCompanyAsync(TesteBackendEnContact.Core.Domain.DTOs.AddCompanyDTO)">
+            <summary>
+            Cadastra uma nova empresa.
+            </summary>
+            <param name="addCompanyDTO">Modelo de objeto addCompanyDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante do registro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.CompanyController.DeleteCompanyAsync(System.Int32)">
+            <summary>
+            Deleta cadastro da empresa referente ao identificador informado na URL da requisição.
+            </summary>
+            <param name="id">Identificador referente ao registro a ser deletado.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.CompanyController.GetAllCompanysAsync(System.Int32,System.Int32)">
+            <summary>
+            Lista todas as empresas cadastrados.
+            </summary>
+            <returns>Retorna uma lista de CompanyDTO se houver algum resgistro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.CompanyController.GetCompanyByIdAsync(System.Int32)">
+            <summary>
+            Pesquisa o cadastro de uma empresa específica.
+            </summary>
+            <param name="id">Identificador referente ao registro a ser pesquisado.</param>
+            <returns>Retorna o objeto CompanyDTO resultante da pesquisa.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.CompanyController.UpdateContactBook(TesteBackendEnContact.Core.Domain.DTOs.CompanyDTO)">
+            <summary>
+            Atualiza os dados de registro de uma empresa
+            </summary>
+            <param name="companyDTO">Modelo de objeto CompanyDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante da atualização de registro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.CompanyController.GetAllContactsByContactBookIdAsync(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Lista todos os contatos cadastrados para um determinada agenda com paginação.
+            </summary>
+            <param name="contactBookId">Identificador referente ao registro a ser pesquisado</param>
+            <param name="pageNumber">Número da pagina</param>
+            <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
+            <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactBookController.AddContactBookAsync(TesteBackendEnContact.Core.Domain.DTOs.AddContactBookDTO)">
+            <summary>
+            Cria uma nova Agenda.
+            </summary>
+            <param name="addContactBookDTO">Modelo de objeto AddContactBookDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante do registro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactBookController.DeleteContactBookAsync(System.Int32)">
+            <summary>
+            Deleta Agenda referente ao identificador informado na URL da requisição.
+            </summary>
+            <param name="id">Identificador referente ao registro a ser deletado.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactBookController.GetAllContactBooksAsync(System.Int32,System.Int32)">
+            <summary>
+            Lista todas as Agendas cadastradas
+            </summary>
+            <returns>Retorna uma lista de ContactBookDTO se houver algum resgistro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactBookController.GetContactBookByIdAsync(System.Int32)">
+            <summary>
+            Pesquisa de uma Agenda específica.
+            </summary>
+            <param name="id">Identificador referente ao registro a ser pesquisado.</param>
+            <returns>Retorna o objeto ContactBookDTO resultante da pesquisa.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactBookController.UpdateContactBook(TesteBackendEnContact.Core.Domain.DTOs.ContactBookDTO)">
+            <summary>
+            Atualiza os dados de registro de uma Agenda
+            </summary>
+            <param name="contactBookDTO">Modelo de objeto ContactBookDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante da atualização de registro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.AddContactAsync(TesteBackendEnContact.Core.Domain.DTOs.AddContactDTO)">
+            <summary>
+            Cria um novo contato.
+            </summary>
+            <param name="addContactDTO">Modelo de objeto AddContactDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante do registro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.DeleteContactAsync(System.Int32)">
+            <summary>
+            Deleta Agenda referente ao identificador informado na URL da requisição.
+            </summary>
+            <param name="id">Identificador referente ao registro a ser deletado.</param>
+            <returns></returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.GetAllContacstAsync(System.Int32,System.Int32)">
+            <summary>
+            Lista todos os contatos cadastrados  com paginação.
+            </summary>
+            <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.GetContactByIdAsync(System.Int32)">
+            <summary>
+            Pesquisa um contato específico.
+            </summary>
+            <param name="id">Identificador referente ao registro a ser pesquisado.</param>
+            <returns>Retorna o objeto ContactDTO resultante da pesquisa.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.UpdateContactBook(TesteBackendEnContact.Core.Domain.DTOs.ContactDTO)">
+            <summary>
+            Atualiza os dados de registro de um contato.
+            </summary>
+            <param name="contactDTO">Modelo de objeto ContactDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante da atualização de registro.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.GetAllContactsByCompanyIdAsync(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Lista todos os contatos cadastrados para um determinada empresa com paginação.
+            </summary>
+            <param name="companyId">Identificador referente ao registro a ser pesquisado</param>
+            <param name="pageNumber">Número da pagina</param>
+            <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
+            <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
+        </member>
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.GetAllContactsByContactBookIdAsync(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Lista todos os contatos cadastrados para um determinada agenda com paginação.
+            </summary>
+            <param name="contactBookId">Identificador referente ao registro a ser pesquisado</param>
+            <param name="pageNumber">Número da pagina</param>
+            <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
+            <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
+        </member>
+    </members>
+</doc>

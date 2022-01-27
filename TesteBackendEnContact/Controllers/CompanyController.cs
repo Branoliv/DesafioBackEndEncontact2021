@@ -1,46 +1,205 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Swashbuckle.AspNetCore.Annotations;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
-using TesteBackendEnContact.Controllers.Models;
-using TesteBackendEnContact.Core.Interface.ContactBook.Company;
-using TesteBackendEnContact.Repository.Interface;
+using TesteBackendEnContact.Core.Domain.DTOs;
+using TesteBackendEnContact.Core.Domain.Entities;
+using TesteBackendEnContact.Core.Interface.Services;
 
 namespace TesteBackendEnContact.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [SwaggerResponse(statusCode: 400, description: "Ocorreu um erro na requisição.", Type = typeof(string))]
     public class CompanyController : ControllerBase
     {
         private readonly ILogger<CompanyController> _logger;
+        private readonly ICompanyService _companyService;
+        private readonly IMapper _mapper;
 
-        public CompanyController(ILogger<CompanyController> logger)
+        public CompanyController(ILogger<CompanyController> logger, ICompanyService companyService, IMapper mapper)
         {
             _logger = logger;
+            _companyService = companyService;
+            _mapper = mapper;
         }
 
+        /// <summary>
+        /// Cadastra uma nova empresa.
+        /// </summary>
+        /// <param name="addCompanyDTO">Modelo de objeto addCompanyDTO a ser informado no corpo da requisição.</param>
+        /// <returns>Retorna o objeto resultante do registro.</returns>
         [HttpPost]
-        public async Task<ActionResult<ICompany>> Post(SaveCompanyRequest company, [FromServices] ICompanyRepository companyRepository)
+        [SwaggerResponse(statusCode: 201, description: "Requisição concluída com sucesso. Retorna o objeto resultante do registro.", Type = typeof(CompanyDTO))]
+        [SwaggerResponse(statusCode: 422, description: "Não foi possível completar o cadastro.", Type = typeof(string))]
+        public async Task<ActionResult<CompanyDTO>> AddCompanyAsync([FromBody] AddCompanyDTO addCompanyDTO)
         {
-            return Ok(await companyRepository.SaveAsync(company.ToCompany()));
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest("Modelo não é valido");
+
+                var company = _mapper.Map<Company>(addCompanyDTO);
+
+                var companyResponse = await _companyService.AddAsync(company);
+
+                if (companyResponse == null)
+                    return UnprocessableEntity("Não foi possível  completar o cadastro.");
+
+                var companyDTO = _mapper.Map<CompanyDTO>(companyResponse);
+
+                return Ok(companyDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        [HttpDelete]
-        public async Task Delete(int id, [FromServices] ICompanyRepository companyRepository)
+        /// <summary>
+        /// Deleta cadastro da empresa referente ao identificador informado na URL da requisição.
+        /// </summary>
+        /// <param name="id">Identificador referente ao registro a ser deletado.</param>
+        /// <returns></returns>
+        [HttpDelete("{id:int}")]
+        [SwaggerResponse(statusCode: 200, description: "Sucesso ao deletar o registro.")]
+        public async Task<ActionResult> DeleteCompanyAsync(int id)
         {
-            await companyRepository.DeleteAsync(id);
+            try
+            {
+                await _companyService.DeleteAsync(id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
+        /// <summary>
+        /// Lista todas as empresas cadastrados.
+        /// </summary>
+        /// <returns>Retorna uma lista de CompanyDTO se houver algum resgistro.</returns>
         [HttpGet]
-        public async Task<IEnumerable<ICompany>> Get([FromServices] ICompanyRepository companyRepository)
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactDTO.", Type = typeof(IEnumerable<CompanyDTO>))]
+        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
+        public async Task<ActionResult<IEnumerable<CompanyDTO>>> GetAllCompanysAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
         {
-            return await companyRepository.GetAllAsync();
+            try
+            {
+                var companys = await _companyService.GetAllAsync(pageNumber, quantityItemsList);
+                var companysDTO = new List<CompanyDTO>();
+
+                if (!companys.Any())
+                    return NoContent();
+
+                // TODO - mapper List
+                foreach (var company in companys)
+                {
+                    var companyDTO = _mapper.Map<CompanyDTO>(company);
+                    companysDTO.Add(companyDTO);
+                }
+
+                return Ok(companysDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        [HttpGet("{id}")]
-        public async Task<ICompany> Get(int id, [FromServices] ICompanyRepository companyRepository)
+        /// <summary>
+        /// Pesquisa o cadastro de uma empresa específica.
+        /// </summary>
+        /// <param name="id">Identificador referente ao registro a ser pesquisado.</param>
+        /// <returns>Retorna o objeto CompanyDTO resultante da pesquisa.</returns>
+        [HttpGet("{id:int}")]
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna o objeto resultante da pesquisa.", Type = typeof(CompanyDTO))]
+        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
+        public async Task<ActionResult<CompanyDTO>> GetCompanyByIdAsync(int id)
         {
-            return await companyRepository.GetAsync(id);
+            var company = await _companyService.FindById(id);
+
+            if (company == null)
+                return NoContent();
+
+            var companyDTO = _mapper.Map<CompanyDTO>(company);
+
+            return Ok(companyDTO);
         }
+
+        /// <summary>
+        /// Atualiza os dados de registro de uma empresa
+        /// </summary>
+        /// <param name="companyDTO">Modelo de objeto CompanyDTO a ser informado no corpo da requisição.</param>
+        /// <returns>Retorna o objeto resultante da atualização de registro.</returns>
+        [HttpPut]
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna o objeto resultante da atualização.", Type = typeof(CompanyDTO))]
+        [SwaggerResponse(statusCode: 422, description: "Não foi possível realizar a atualização", Type = typeof(string))]
+        public async Task<ActionResult<CompanyDTO>> UpdateContactBook([FromBody] CompanyDTO companyDTO)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest("O modelo de dados informado não é valido.");
+
+                var company = _mapper.Map<Company>(companyDTO);
+
+                var companyUpdated = await _companyService.UpdateAsync(company);
+
+                if (companyUpdated == null)
+                    return UnprocessableEntity("Não foi possível processar a atualização");
+
+                var companyDTOResponse = _mapper.Map<CompanyDTO>(companyUpdated);
+
+                return Ok(companyDTOResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Lista todos os contatos cadastrados para um determinada agenda com paginação.
+        /// </summary>
+        /// <param name="contactBookId">Identificador referente ao registro a ser pesquisado</param>
+        /// <param name="pageNumber">Número da pagina</param>
+        /// <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
+        /// <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
+        [HttpGet("contactbook/{contactBookId:int}")]
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactDTO.", Type = typeof(IEnumerable<CompanyDTO>))]
+        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
+        public async Task<ActionResult<IEnumerable<CompanyDTO>>> GetAllContactsByContactBookIdAsync(int contactBookId, [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
+        {
+            try
+            {
+                var companys = await _companyService.GetAllByContactBookIdAsync(contactBookId, pageNumber, quantityItemsList);
+                var companysDTO = new List<CompanyDTO>();
+
+                if (!companys.Any())
+                    return NoContent();
+
+                // TODO - mapper List
+                foreach (var company in companys)
+                {
+                    var companyDTO = _mapper.Map<CompanyDTO>(company);
+                    companysDTO.Add(companyDTO);
+                }
+
+                return Ok(companysDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
