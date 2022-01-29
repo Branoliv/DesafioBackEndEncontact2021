@@ -57,6 +57,7 @@ namespace TesteBackendEnContact
             services.AddTransient<IContactBookService, ContactBookService>();
             services.AddTransient<ICompanyService, CompanyService>();
             services.AddTransient<IContactService, ContactService>();
+            services.AddTransient<ICsvService, CsvService>();
 
             //Add DI Repositories
             services.AddTransient<IContactBookRepository, ContactBookRepository>();

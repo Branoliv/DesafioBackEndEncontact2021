@@ -1,8 +1,9 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
-using System.Collections.Generic;
+using System;
 using System.Data;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain.Entities;
@@ -43,16 +44,6 @@ namespace TesteBackendEnContact.Repository
 
         }
 
-        public async Task<IEnumerable<Company>> GetAllAsync(int pageNumber, int quantityItemsList)
-        {
-            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-
-            var query = "SELECT * FROM Company LIMIT @quantityItemsList OFFSET @OffSet;";
-            var result = await connection.QueryAsync<Company>(query, new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList });
-
-            return result;
-        }
-
         public async Task<Company> GetAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
@@ -61,6 +52,17 @@ namespace TesteBackendEnContact.Repository
             var result = await connection.QuerySingleOrDefaultAsync<Company>(query, new { id });
 
             return result;
+        }
+
+        public async Task<Company> GetAsync(string companyName)
+        {
+            var query = "SELECT * FROM Company WHERE LOWER(Name) LIKE @companyName";
+
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+
+            var result = await connection.QueryAsync<Company>(query, new { companyName });
+
+            return result.FirstOrDefault();
         }
 
         public async Task<int> InsertAsync(Company company)
@@ -86,13 +88,25 @@ namespace TesteBackendEnContact.Repository
             return result;
         }
 
-        public async Task<IEnumerable<Company>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList)
+        public async Task<Pagination<Company>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
         {
-            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-            var query = "SELECT * FROM Company WHERE ContactBookId = @contactBookId LIMIT @quantityItemsList OFFSET @OffSet;";
-            var result = await connection.QueryAsync<Company>(query, new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList, contactBookId });
+            var param = new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList };
 
-            return result;
+            var query = @"SELECT * FROM Company LIMIT @quantityItemsList OFFSET @OffSet;";
+
+            query += @"SELECT COUNT(1) FROM Company";
+
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            connection.Open();
+
+            using var result = await connection.QueryMultipleAsync(query, param).ConfigureAwait(false);
+
+            var companies = result.Read<Company>().ToList();
+            var totalRows = result.ReadFirst<double>();
+            var totalPages = Math.Ceiling(totalRows / quantityItemsList); ;
+
+
+            return new Pagination<Company>(totalRows, totalPages, companies);
         }
     }
 }

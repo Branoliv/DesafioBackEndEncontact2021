@@ -27,7 +27,10 @@ namespace TesteBackendEnContact.Core.Services
             if (contactBook == null)
                 return null;
 
-            //TODO - Verificar se nome da agenda já existe
+            var contactBookExist = await _contactBookRepository.GetAsync(contactBook.Name.ToLower());
+
+            if(contactBookExist != null)
+                throw new Exception("Existe uma agenda com esse nome.");
 
             var resultId = await _contactBookRepository.InsertAsync(contactBook);
 
@@ -51,12 +54,12 @@ namespace TesteBackendEnContact.Core.Services
             if (contactBookInContacts > 0)
                 throw new Exception("Existem registros com essa agenda.");
 
-            var contactBookInCompanys = await _companyRepository.CountContactBookInCompanys(id);
-
-            if (contactBookInCompanys > 0)
-                throw new Exception("Existem registros com essa agenda.");
-
             await _contactBookRepository.DeleteAsync(id);
+        }
+
+        public async Task<ContactBook> FindAsync(string name)
+        {
+            return await _contactBookRepository.GetAsync(name);
         }
 
         public async Task<ContactBook> FindById(int id)
@@ -70,9 +73,9 @@ namespace TesteBackendEnContact.Core.Services
             return cbR;
         }
 
-        public async Task<IEnumerable<ContactBook>> GetAllAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<ContactBook>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
         {
-            return await _contactBookRepository.GetAllAsync(pageNumber, quantityItemsList);
+            return await _contactBookRepository.GetAllPaginationAsync(pageNumber, quantityItemsList);
         }
 
         public async Task<ContactBook> UpdateAsync(ContactBook contactBook)
@@ -81,6 +84,11 @@ namespace TesteBackendEnContact.Core.Services
 
             if (contactBookExist == null)
                 return null;
+
+            var contactBookNameExist = await _contactBookRepository.GetAsync(contactBook.Name.ToLower());
+
+            if (contactBookNameExist != null)
+                throw new Exception("Existe uma agenda com esse nome.");
 
             var updateResult = await _contactBookRepository.UpdateAsync(contactBook);
 

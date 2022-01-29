@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TesteBackendEnContact.Core.Domain.DTOs
 {
-    public class AddContactDTO
+    public class UpdateContactDTO
     {
-        public AddContactDTO(string name, string phone, string email, int companyId, int contactBookId, string address)
+        public UpdateContactDTO(int id, string name, string phone, string email, int companyId, int contactBookId, string address)
         {
+            Id = id;
             Name = name;
             Phone = phone;
             Email = email;
@@ -15,11 +19,13 @@ namespace TesteBackendEnContact.Core.Domain.DTOs
             Address = address;
         }
 
+        [Required(ErrorMessage = "O número de Id é obrigatório.")]
+        public int Id { get; private set; }
 
         [Required(ErrorMessage = "O nome do contato é obrigatório.")]
         public string Name { get; private set; }
 
-
+        [Phone]
         public string Phone { get; private set; }
 
         [Required(ErrorMessage = "Necessario informar um e-mail.")]
@@ -33,11 +39,5 @@ namespace TesteBackendEnContact.Core.Domain.DTOs
         public int ContactBookId { get; private set; }
 
         public string Address { get; private set; }
-
-        public static implicit operator AddContactDTO(string line)
-        {
-            var data = line.Split(";");
-            return new AddContactDTO(data[0], data[1], data[2], (data[3] == "" ? 0 : int.Parse(data[3])),(data[5] == ""? 0 : int.Parse(data[5])), data[7]);
-        }
     }
 }

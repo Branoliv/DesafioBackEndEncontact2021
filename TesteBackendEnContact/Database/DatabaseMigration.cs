@@ -24,9 +24,10 @@ namespace TesteBackendEnContact.Database
 
             Create.Table("Company")
                 .WithColumn("Id").AsInt32().PrimaryKey().Identity()
-                .WithColumn("ContactBookId").AsInt32().NotNullable()
                 .WithColumn("Name").AsString(50).NotNullable()
             ;
+
+            //.WithColumn("ContactBookId").AsInt32().NotNullable()
         }
 
         public override void Down()

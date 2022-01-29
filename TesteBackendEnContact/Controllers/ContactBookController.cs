@@ -13,8 +13,8 @@ using TesteBackendEnContact.Core.Interface.Services;
 
 namespace TesteBackendEnContact.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     [SwaggerResponse(statusCode: 400, description: "Ocorreu um erro na requisição.", Type = typeof(string))]
     public class ContactBookController : ControllerBase
     {
@@ -53,58 +53,6 @@ namespace TesteBackendEnContact.Controllers
                 var contactBookDTO = _mapper.Map<ContactBookDTO>(contactBookResponse);
 
                 return Created("", contactBookDTO);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Deleta Agenda referente ao identificador informado na URL da requisição.
-        /// </summary>
-        /// <param name="id">Identificador referente ao registro a ser deletado.</param>
-        /// <returns></returns>
-        [HttpDelete("{id:int}")]
-        [SwaggerResponse(statusCode: 200, description: "Sucesso ao deletar o registro.")]
-        public async Task<ActionResult> DeleteContactBookAsync(int id)
-        {
-            try
-            {
-                await _contactBookService.DeleteAsync(id);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Lista todas as Agendas cadastradas
-        /// </summary>
-        /// <returns>Retorna uma lista de ContactBookDTO se houver algum resgistro.</returns>
-        [HttpGet]
-        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactBookDTO.", Type = typeof(IEnumerable<ContactBookDTO>))]
-        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
-        public async Task<ActionResult<IEnumerable<ContactBookDTO>>> GetAllContactBooksAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
-        {
-            try
-            {
-                var contactBooks = await _contactBookService.GetAllAsync(pageNumber, quantityItemsList);
-                var contactBooksDTO = new List<ContactBookDTO>();
-
-                if (!contactBooks.Any())
-                    return NoContent();
-
-                foreach (var contactBook in contactBooks)
-                {
-                    var contactBookDTO = new ContactBookDTO(contactBook.Id, contactBook.Name);
-                    contactBooksDTO.Add(contactBookDTO);
-                }
-
-                return Ok(contactBooksDTO);
             }
             catch (Exception ex)
             {
@@ -164,6 +112,53 @@ namespace TesteBackendEnContact.Controllers
                 var contactBookDTOResponse = _mapper.Map<ContactBookDTO>(contactBookUpdated);
 
                 return Ok(contactBookDTOResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Deleta Agenda referente ao identificador informado na URL da requisição.
+        /// </summary>
+        /// <param name="id">Identificador referente ao registro a ser deletado.</param>
+        /// <returns></returns>
+        [HttpDelete("{id:int}")]
+        [SwaggerResponse(statusCode: 200, description: "Sucesso ao deletar o registro.")]
+        public async Task<ActionResult> DeleteContactBookAsync(int id)
+        {
+            try
+            {
+                await _contactBookService.DeleteAsync(id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Lista todas as Agendas cadastradas
+        /// </summary>
+        /// <returns>Retorna uma lista de ContactBookDTO se houver algum resgistro.</returns>
+        [HttpGet]
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactBookDTO.", Type = typeof(IEnumerable<ContactBookDTO>))]
+        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
+        public async Task<ActionResult<PaginationDTO<ContactBookDTO>>> GetAllContactBooksAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
+        {
+            try
+            {
+                var contactBooksPaginated = await _contactBookService.GetAllPaginationAsync(pageNumber, quantityItemsList);
+
+                if (!contactBooksPaginated.ListResult.Any())
+                    return NoContent();
+
+                var contactBooksPaginatedDTO = _mapper.Map<PaginationDTO<ContactBookDTO>>(contactBooksPaginated);
+
+                return Ok(contactBooksPaginatedDTO);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain.Entities;
 
 namespace TesteBackendEnContact.Repository.Interface
@@ -9,7 +8,8 @@ namespace TesteBackendEnContact.Repository.Interface
         Task<int> InsertAsync(ContactBook contactBook);
         Task<bool> UpdateAsync(ContactBook contactBook);
         Task DeleteAsync(int id);
-        Task<IEnumerable<ContactBook>> GetAllAsync(int pageNumber, int quantityItemsList);
         Task<ContactBook> GetAsync(int id);
+        Task<ContactBook> GetAsync(string contactBookName);
+        Task<Pagination<ContactBook>> GetAllPaginationAsync(int pageNumber, int quantityItemsList);
     }
 }

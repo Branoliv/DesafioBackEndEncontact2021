@@ -13,8 +13,8 @@ using TesteBackendEnContact.Core.Interface.Services;
 
 namespace TesteBackendEnContact.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     [SwaggerResponse(statusCode: 400, description: "Ocorreu um erro na requisição.", Type = typeof(string))]
     public class CompanyController : ControllerBase
     {
@@ -54,59 +54,6 @@ namespace TesteBackendEnContact.Controllers
                 var companyDTO = _mapper.Map<CompanyDTO>(companyResponse);
 
                 return Ok(companyDTO);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Deleta cadastro da empresa referente ao identificador informado na URL da requisição.
-        /// </summary>
-        /// <param name="id">Identificador referente ao registro a ser deletado.</param>
-        /// <returns></returns>
-        [HttpDelete("{id:int}")]
-        [SwaggerResponse(statusCode: 200, description: "Sucesso ao deletar o registro.")]
-        public async Task<ActionResult> DeleteCompanyAsync(int id)
-        {
-            try
-            {
-                await _companyService.DeleteAsync(id);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Lista todas as empresas cadastrados.
-        /// </summary>
-        /// <returns>Retorna uma lista de CompanyDTO se houver algum resgistro.</returns>
-        [HttpGet]
-        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactDTO.", Type = typeof(IEnumerable<CompanyDTO>))]
-        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
-        public async Task<ActionResult<IEnumerable<CompanyDTO>>> GetAllCompanysAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
-        {
-            try
-            {
-                var companys = await _companyService.GetAllAsync(pageNumber, quantityItemsList);
-                var companysDTO = new List<CompanyDTO>();
-
-                if (!companys.Any())
-                    return NoContent();
-
-                // TODO - mapper List
-                foreach (var company in companys)
-                {
-                    var companyDTO = _mapper.Map<CompanyDTO>(company);
-                    companysDTO.Add(companyDTO);
-                }
-
-                return Ok(companysDTO);
             }
             catch (Exception ex)
             {
@@ -167,33 +114,19 @@ namespace TesteBackendEnContact.Controllers
         }
 
         /// <summary>
-        /// Lista todos os contatos cadastrados para um determinada agenda com paginação.
+        /// Deleta cadastro da empresa referente ao identificador informado na URL da requisição.
         /// </summary>
-        /// <param name="contactBookId">Identificador referente ao registro a ser pesquisado</param>
-        /// <param name="pageNumber">Número da pagina</param>
-        /// <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
-        /// <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
-        [HttpGet("contactbook/{contactBookId:int}")]
-        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactDTO.", Type = typeof(IEnumerable<CompanyDTO>))]
-        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
-        public async Task<ActionResult<IEnumerable<CompanyDTO>>> GetAllContactsByContactBookIdAsync(int contactBookId, [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
+        /// <param name="id">Identificador referente ao registro a ser deletado.</param>
+        /// <returns></returns>
+        [HttpDelete("{id:int}")]
+        [SwaggerResponse(statusCode: 200, description: "Sucesso ao deletar o registro.")]
+        public async Task<ActionResult> DeleteCompanyAsync(int id)
         {
             try
             {
-                var companys = await _companyService.GetAllByContactBookIdAsync(contactBookId, pageNumber, quantityItemsList);
-                var companysDTO = new List<CompanyDTO>();
+                await _companyService.DeleteAsync(id);
 
-                if (!companys.Any())
-                    return NoContent();
-
-                // TODO - mapper List
-                foreach (var company in companys)
-                {
-                    var companyDTO = _mapper.Map<CompanyDTO>(company);
-                    companysDTO.Add(companyDTO);
-                }
-
-                return Ok(companysDTO);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -201,5 +134,27 @@ namespace TesteBackendEnContact.Controllers
             }
         }
 
+        /// <summary>
+        /// Lista todas as empresas cadastrados.
+        /// </summary>
+        /// <returns>Retorna uma lista de CompanyDTO se houver algum resgistro.</returns>
+        [HttpGet]
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactDTO.", Type = typeof(IEnumerable<CompanyDTO>))]
+        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
+        public async Task<ActionResult<PaginationDTO<CompanyDTO>>> GetAllCompanysAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
+        {
+            try
+            {
+                var companysPaginated = await _companyService.GetAllPaginationAsync(pageNumber, quantityItemsList);
+
+                var paginationDTO = _mapper.Map<PaginationDTO<CompanyDTO>>(companysPaginated);
+
+                return Ok(paginationDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

@@ -10,27 +10,31 @@ namespace TesteBackendEnContact.Core.Services
     public class CompanyService : ICompanyService
     {
         private readonly ICompanyRepository _companyRepository;
-        private readonly IContactBookService _contactBookService;
         private readonly IContactRepository _contactRepository;
 
 
-        public CompanyService(ICompanyRepository companyRepository, IContactBookService contactBookService, IContactRepository contactRepository)
+        public CompanyService(ICompanyRepository companyRepository,  IContactRepository contactRepository)
         {
             _companyRepository = companyRepository;
-            _contactBookService = contactBookService;
             _contactRepository = contactRepository;
         }
 
 
-        public async Task<Company> AddAsync(Company addCompanyDTO)
+        public async Task<Company> AddAsync(Company company)
         {
-            var contactBook = await _contactBookService.FindById(addCompanyDTO.ContactBookId);
+            var companyNameExist = await _companyRepository.GetAsync(company.Name);
 
-            if (contactBook == null)
-                return null;
+            if (companyNameExist != null)
+                throw new Exception("Existe uma empresa com esse nome.");
 
-            var company = new Company(addCompanyDTO.ContactBookId, addCompanyDTO.Name);
-            var resultId = await _companyRepository.InsertAsync(company);
+            //var contactBook = await _contactBookService.FindById(company.ContactBookId);
+
+            //if (contactBook == null)
+            //    return null;
+
+            var newcompany = new Company(company.Name);
+
+            var resultId = await _companyRepository.InsertAsync(newcompany);
 
             if (resultId <= 0)
             {
@@ -62,19 +66,19 @@ namespace TesteBackendEnContact.Core.Services
             await _companyRepository.DeleteAsync(id);
         }
 
+        public async Task<Company> FindAsync(string name)
+        {
+            return await _companyRepository.GetAsync(name);
+        }
+
         public async Task<Company> FindById(int id)
         {
             return await _companyRepository.GetAsync(id);
         }
 
-        public async Task<IEnumerable<Company>> GetAllAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<Company>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
         {
-            return await _companyRepository.GetAllAsync(pageNumber, quantityItemsList);
-        }
-
-        public async Task<IEnumerable<Company>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList)
-        {
-            return await _companyRepository.GetAllByContactBookIdAsync(contactBookId, pageNumber, quantityItemsList);
+            return await _companyRepository.GetAllPaginationAsync(pageNumber, quantityItemsList);
         }
 
         public async Task<Company> UpdateAsync(Company company)
@@ -83,6 +87,11 @@ namespace TesteBackendEnContact.Core.Services
 
             if (companyExist == null)
                 return null;
+
+            var companyNameExist = await _companyRepository.GetAsync(company.Name);
+
+            if (companyNameExist != null)
+                throw new Exception("Existe uma empresa com esse nome.");
 
             var updateResult = await _companyRepository.UpdateAsync(company);
 

@@ -5,7 +5,7 @@ namespace TesteBackendEnContact.Core.Domain.DTOs
 {
     public class ContactDTO
     {
-       // protected ContactDTO() { }
+        // protected ContactDTO() { }
 
         public ContactDTO(int id, string name, string phone, string email, int companyId, int contactBookId, string address)
         {
@@ -37,5 +37,7 @@ namespace TesteBackendEnContact.Core.Domain.DTOs
         public int ContactBookId { get; private set; }
 
         public string Address { get; private set; }
+        public CompanyDTO CompanyDTO { get; set; }
+        public ContactBookDTO ContactBookDTO { get; set; }
     }
 }

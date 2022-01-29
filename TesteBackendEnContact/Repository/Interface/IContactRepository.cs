@@ -6,14 +6,15 @@ namespace TesteBackendEnContact.Repository.Interface
 {
     public interface IContactRepository
     {
+        Task<int> CountCompanyInContacts(int companyId);
+        Task<int> CountContactBookInContacts(int contactBookId);
         Task<int> InsertAsync(Contact contactBook);
         Task<bool> UpdateAsync(Contact contactBook);
         Task DeleteAsync(int id);
-        Task<IEnumerable<Contact>> GetAllAsync(int pageNumber, int quantityItemsList);
         Task<Contact> GetAsync(int id);
-        Task<int> CountCompanyInContacts(int companyId);
-        Task<int> CountContactBookInContacts(int contactBookId);
-        Task<IEnumerable<Contact>> GetAllByCompanyIdAsync(int companyId, int pageNumber, int quantityItemsList);
-        Task<IEnumerable<Contact>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList);
+        Task<Pagination<Contact>> GetAsync(string param, int pageNumber, int quantityItemsList);
+        Task<Pagination<Contact>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList);
+        Task<Pagination<Contact>> GetAllByCompanyIdPaginatedAsync(int companyId, int pageNumber, int quantityItemsList);
+        Task<Pagination<Contact>> GetAllByContactBookIdPaginatedAsync(int contactBookId, int pageNumber, int quantityItemsList);
     }
 }

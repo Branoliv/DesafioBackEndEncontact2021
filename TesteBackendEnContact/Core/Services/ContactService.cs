@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain.Entities;
 using TesteBackendEnContact.Core.Interface.Services;
@@ -21,6 +22,16 @@ namespace TesteBackendEnContact.Core.Services
             _companyService = companyService;
         }
 
+
+        public async Task<int> CountCompanyInContacts(int companyId)
+        {
+            return await _contactRepository.CountCompanyInContacts(companyId);
+        }
+
+        public async Task<int> CountContactBookInContacts(int contactBookId)
+        {
+            return await _contactRepository.CountContactBookInContacts(contactBookId);
+        }
 
         public async Task<Contact> AddAsync(Contact entitie)
         {
@@ -53,36 +64,6 @@ namespace TesteBackendEnContact.Core.Services
             return await _contactRepository.GetAsync(resultId);
         }
 
-        public async Task<int> CountCompanyInContacts(int companyId)
-        {
-            return await _contactRepository.CountCompanyInContacts(companyId);
-        }
-
-        public async Task<int> CountContactBookInContacts(int contactBookId)
-        {
-            return await _contactRepository.CountContactBookInContacts(contactBookId);
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var contact = await _contactRepository.GetAsync(id);
-
-            if (contact == null)
-                return;
-
-            await _contactRepository.DeleteAsync(id);
-        }
-
-        public async Task<Contact> FindById(int id)
-        {
-            return await _contactRepository.GetAsync(id);
-        }
-
-        public async Task<IEnumerable<Contact>> GetAllAsync(int pageNumber, int quantityItemsList)
-        {
-            return await _contactRepository.GetAllAsync(pageNumber, quantityItemsList);
-        }
-
         public async Task<Contact> UpdateAsync(Contact contact)
         {
             var contactExist = await _contactRepository.GetAsync(contact.Id);
@@ -103,17 +84,45 @@ namespace TesteBackendEnContact.Core.Services
             if (!updateResult)
                 throw new Exception("Não foi possível realizar a atualização");
 
-            return contact;
+            return await _contactRepository.GetAsync(contact.Id); ;
         }
 
-        public async Task<IEnumerable<Contact>> GetAllByCompanyIdAsync(int companyId, int pageNumber, int quantityItemsList)
+        public async Task DeleteAsync(int id)
         {
-            return await _contactRepository.GetAllByCompanyIdAsync(companyId, pageNumber, quantityItemsList);
+            var contact = await _contactRepository.GetAsync(id);
+
+            if (contact == null)
+                return;
+
+            await _contactRepository.DeleteAsync(id);
         }
 
-        public async Task<IEnumerable<Contact>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList)
+        public async Task<Contact> FindById(int id)
         {
-            return await _contactRepository.GetAllByContactBookIdAsync(contactBookId, pageNumber, quantityItemsList);
+            return await _contactRepository.GetAsync(id);
+        }
+
+        public async Task<Pagination<Contact>> GetAsync(string param, int pageNumber, int quantityItemsList)
+        {
+            var result = await _contactRepository.GetAsync(param.ToLower().Trim(), pageNumber, quantityItemsList);
+
+            return result;
+        }
+
+        public async Task<Pagination<Contact>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        {
+            return await _contactRepository.GetAllPaginatedAsync(pageNumber, quantityItemsList);
+        }
+
+        public async Task<Pagination<Contact>> GetAllByCompanyIdPaginatedAsync(int companyId, int pageNumber, int quantityItemsList)
+        {
+            return await _contactRepository.GetAllByCompanyIdPaginatedAsync(companyId, pageNumber, quantityItemsList);
+        }
+
+        public async Task<Pagination<Contact>> GetAllByContactBookIdPaginatedAsync(int contactBookId, int pageNumber, int quantityItemsList)
+        {
+            return await _contactRepository.GetAllByContactBookIdPaginatedAsync(contactBookId, pageNumber, quantityItemsList);
         }
     }
 }
+

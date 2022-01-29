@@ -6,7 +6,7 @@ namespace TesteBackendEnContact.Core.Interface.Services
 {
     public interface ICompanyService : IServiceBase<Company>
     {
+        Task<Company> FindAsync(string name);
         Task<int> CountContactBookInCompanys(int contactBookId);
-        Task<IEnumerable<Company>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList);
     }
 }

@@ -9,9 +9,9 @@ namespace TesteBackendEnContact.Repository.Interface
         Task<int> InsertAsync(Company company);
         Task<bool> UpdateAsync(Company company);
         Task DeleteAsync(int id);
-        Task<IEnumerable<Company>> GetAllAsync(int pageNumber, int quantityItemsList);
         Task<Company> GetAsync(int id);
+        Task<Company> GetAsync(string companyName);
         Task<int> CountContactBookInCompanys(int contactBookId);
-        Task<IEnumerable<Company>> GetAllByContactBookIdAsync(int contactBookId, int pageNumber, int quantityItemsList);
+        Task<Pagination<Company>> GetAllPaginationAsync(int pageNumber, int quantityItemsList);
     }
 }

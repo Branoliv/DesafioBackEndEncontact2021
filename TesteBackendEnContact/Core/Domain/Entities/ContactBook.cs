@@ -21,5 +21,11 @@ namespace TesteBackendEnContact.Core.Domain.Entities
         [Key]
         public int Id { get; private set; }
         public string Name { get; private set; }
+
+        public static implicit operator ContactBook(string line)
+        {
+            var data = line.Split(";");
+            return new ContactBook(data[6]);
+        }
     }
 }

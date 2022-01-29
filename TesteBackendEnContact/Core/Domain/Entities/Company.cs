@@ -6,24 +6,26 @@ namespace TesteBackendEnContact.Core.Domain.Entities
     public class Company
     {
         protected Company() { }
-        public Company(int id, int contactBookId, string name)
+        public Company(int id, string name)
         {
             Id = id;
-            ContactBookId = contactBookId;
             Name = name;
         }
 
-        public Company(int contactBookId, string name)
+        public Company(string name)
         {
-            ContactBookId = contactBookId;
             Name = name;
         }
 
         [Key]
         public int Id { get; private set; }
 
-        public int ContactBookId { get; private set; }
-
         public string Name { get; private set; }
+
+        public static implicit operator Company(string line)
+        {
+            var data = line.Split(";");
+            return new Company(data[4]);
+        }
     }
 }

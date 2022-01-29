@@ -1,7 +1,9 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using Microsoft.Data.Sqlite;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain.Entities;
 using TesteBackendEnContact.Database;
@@ -63,6 +65,38 @@ namespace TesteBackendEnContact.Repository
             return result;
         }
 
-        
+        public async Task<ContactBook> GetAsync(string contactBookName)
+        {
+            var param = new { contactBookName };
+            
+            var query = @"SELECT * FROM ContactBook WHERE LOWER(Name) LIKE @contactBookName";
+            
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+
+            var result = await connection.QueryAsync<ContactBook>(query, param);
+
+            return result.FirstOrDefault();
+        }
+
+        public async Task<Pagination<ContactBook>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        {
+            var param = new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList };
+
+            var query = @"SELECT * FROM ContactBook LIMIT @quantityItemsList OFFSET @OffSet;";
+
+            query += @"SELECT COUNT(1) FROM ContactBook";
+
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            connection.Open();
+
+            using var result = await connection.QueryMultipleAsync(query, param).ConfigureAwait(false);
+
+            var contactBooks = result.Read<ContactBook>().ToList();
+            var totalRows = result.ReadFirst<double>();
+            var totalPages = Math.Ceiling(totalRows / quantityItemsList); ;
+
+
+            return new Pagination<ContactBook>(totalRows, totalPages, contactBooks);
+        }
     }
 }
