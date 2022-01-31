@@ -134,10 +134,15 @@
             <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
             <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
         </member>
-        <member name="T:TesteBackendEnContact.Controllers.FilesController">
+        <member name="M:TesteBackendEnContact.Controllers.ContactController.GetAllByContactBookIdAndCompanyIdPaginatedAsync(System.Int32,System.Int32,System.Int32,System.Int32)">
             <summary>
-            Para todos uploads do arquivo .csv, devem seguir o seguinte padrão de Colunas: name;phone;email;companyId;companyNam;contactBookId;contactBookName;address
+            Lista todos os contatos cadastrados para um determinada agenda com paginação.
             </summary>
+            <param name="contactBookId">Identificador referente ao registro a ser pesquisado</param>
+            <param name="companyId">Identificador referente ao registro a ser pesquisado</param>
+            <param name="pageNumber">Número da pagina</param>
+            <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
+            <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
         </member>
         <member name="M:TesteBackendEnContact.Controllers.FilesController.GetAllCsvFileAsync(System.Int32,System.Int32)">
             <summary>

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain.Entities;
 using TesteBackendEnContact.Core.Interface.Services;
@@ -11,15 +9,15 @@ namespace TesteBackendEnContact.Core.Services
     public class ContactService : IContactService
     {
         private readonly IContactRepository _contactRepository;
-        private readonly IContactBookService _contactBookService;
-        private readonly ICompanyService _companyService;
+        private readonly IContactBookRepository _contactBookRepository;
+        private readonly ICompanyRepository _companyRepository;
 
 
-        public ContactService(IContactRepository contactRepository, IContactBookService contactBookService, ICompanyService companyService)
+        public ContactService(IContactRepository contactRepository, IContactBookRepository contactBookRepository, ICompanyRepository companyRepository)
         {
             _contactRepository = contactRepository;
-            _contactBookService = contactBookService;
-            _companyService = companyService;
+            _contactBookRepository = contactBookRepository;
+            _companyRepository = companyRepository;
         }
 
 
@@ -35,28 +33,20 @@ namespace TesteBackendEnContact.Core.Services
 
         public async Task<Contact> AddAsync(Contact entitie)
         {
-            var contactBook = await _contactBookService.FindById(entitie.ContactBookId);
+            var contactBookExist = await _contactBookRepository.GetAsync(entitie.ContactBookId);
 
-            if (contactBook == null)
-                throw new Exception("A agenda informada não está cadastrada.");
+            if (contactBookExist == null)
+                throw new ArgumentNullException(nameof(contactBookExist), "A agenda informada não está cadastrada.");
 
             if (entitie.CompanyId > 0)
             {
-                var company = await _companyService.FindById(entitie.CompanyId);
+                var companyExist = await _companyRepository.GetAsync(entitie.CompanyId);
 
-                if (company == null)
-                    throw new Exception("A empresa informada não está cadastrada.");
+                if (companyExist == null)
+                    throw new ArgumentNullException(nameof(companyExist), "A agenda informada não está cadastrada.");
             }
 
-            var contact = new Contact(
-                entitie.Name,
-                entitie.Phone,
-                entitie.Email,
-                entitie.CompanyId,
-                entitie.ContactBookId,
-                entitie.Address);
-
-            var resultId = await _contactRepository.InsertAsync(contact);
+            var resultId = await _contactRepository.InsertAsync(entitie);
 
             if (resultId <= 0)
                 return null;
@@ -69,14 +59,14 @@ namespace TesteBackendEnContact.Core.Services
             var contactExist = await _contactRepository.GetAsync(contact.Id);
 
             if (contactExist == null)
-                return null;
+                throw new ArgumentNullException(nameof(contactExist), "O contato informado não foi encontrado.");
 
             if (contact.CompanyId > 0)
             {
-                var company = await _companyService.FindById(contact.CompanyId);
+                var companyExist = await _companyRepository.GetAsync(contact.CompanyId);
 
-                if (company == null)
-                    throw new Exception("A empresa informada não está cadastrada.");
+                if (companyExist == null)
+                    throw new ArgumentNullException(nameof(companyExist), "A agenda informada não está cadastrada.");
             }
 
             var updateResult = await _contactRepository.UpdateAsync(contact);
@@ -87,14 +77,14 @@ namespace TesteBackendEnContact.Core.Services
             return await _contactRepository.GetAsync(contact.Id); ;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var contact = await _contactRepository.GetAsync(id);
 
             if (contact == null)
-                return;
+                return false;
 
-            await _contactRepository.DeleteAsync(id);
+            return await _contactRepository.DeleteAsync(id);
         }
 
         public async Task<Contact> FindById(int id)
@@ -104,12 +94,10 @@ namespace TesteBackendEnContact.Core.Services
 
         public async Task<Pagination<Contact>> GetAsync(string param, int pageNumber, int quantityItemsList)
         {
-            var result = await _contactRepository.GetAsync(param.ToLower().Trim(), pageNumber, quantityItemsList);
-
-            return result;
+            return await _contactRepository.GetAsync(param.ToLower().Trim(), pageNumber, quantityItemsList);
         }
 
-        public async Task<Pagination<Contact>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<Contact>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList)
         {
             return await _contactRepository.GetAllPaginatedAsync(pageNumber, quantityItemsList);
         }
@@ -122,6 +110,11 @@ namespace TesteBackendEnContact.Core.Services
         public async Task<Pagination<Contact>> GetAllByContactBookIdPaginatedAsync(int contactBookId, int pageNumber, int quantityItemsList)
         {
             return await _contactRepository.GetAllByContactBookIdPaginatedAsync(contactBookId, pageNumber, quantityItemsList);
+        }
+
+        public async Task<Pagination<Contact>> GetAllByContactBookIdAndCompanyIdPaginatedAsync(int contactBookId, int companyId, int pageNumber, int quantityItemsList)
+        {
+            return await _contactRepository.GetAllByContactBookIdAndCompanyIdPaginatedAsync(contactBookId, companyId, pageNumber, quantityItemsList);
         }
     }
 }

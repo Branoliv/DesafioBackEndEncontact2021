@@ -23,7 +23,7 @@ namespace TesteBackendEnContact.Repository
         }
 
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
             var state = connection.State;
@@ -39,9 +39,12 @@ namespace TesteBackendEnContact.Repository
 
             var result = await connection.ExecuteAsync(sql.ToString(), new { id }, transaction);
 
-            var x = transaction.IsolationLevel;
+            if (result <= 0)
+                return false;
+
             transaction.Commit();
 
+            return true;
         }
 
         public async Task<Company> GetAsync(int id)
@@ -88,7 +91,7 @@ namespace TesteBackendEnContact.Repository
             return result;
         }
 
-        public async Task<Pagination<Company>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<Company>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList)
         {
             var param = new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList };
 

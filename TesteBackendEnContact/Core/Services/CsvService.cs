@@ -60,7 +60,7 @@ namespace TesteBackendEnContact.Core.Services
             if (companies.Count <= 0)
                 return null;
 
-            List<Company> companiesSaveResult = new List<Company>();
+            List<Company> companiesSaveResult = new();
 
             foreach (var company in companies)
             {
@@ -99,7 +99,7 @@ namespace TesteBackendEnContact.Core.Services
             if (contactBooks.Count <= 0)
                 return null;
 
-            List<ContactBook> contactBooksSaveResult = new List<ContactBook>();
+            List<ContactBook> contactBooksSaveResult = new();
 
             foreach (var contact in contactBooks)
             {
@@ -138,7 +138,7 @@ namespace TesteBackendEnContact.Core.Services
             if (contacts.Count <= 0)
                 return null;
 
-            List<Contact> contactsSaveResult = new List<Contact>();
+            List<Contact> contactsSaveResult = new();
 
             foreach (var contact in contacts)
             {
@@ -158,5 +158,4 @@ namespace TesteBackendEnContact.Core.Services
             return contactsSaveResult.ToList();
         }
     }
-
 }

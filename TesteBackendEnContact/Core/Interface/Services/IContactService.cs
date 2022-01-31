@@ -11,5 +11,6 @@ namespace TesteBackendEnContact.Core.Interface.Services
         Task<Pagination<Contact>> GetAsync(string param, int pageNumber, int quantityItemsList);
         Task<Pagination<Contact>> GetAllByCompanyIdPaginatedAsync(int companyId, int pageNumber, int quantityItemsList);
         Task<Pagination<Contact>> GetAllByContactBookIdPaginatedAsync(int contactBookId, int pageNumber, int quantityItemsList);
+        Task<Pagination<Contact>> GetAllByContactBookIdAndCompanyIdPaginatedAsync(int contactBookId, int companyId, int pageNumber, int quantityItemsList);
     }
 }

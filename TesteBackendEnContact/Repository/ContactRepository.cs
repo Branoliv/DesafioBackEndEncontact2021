@@ -55,35 +55,19 @@ namespace TesteBackendEnContact.Repository
             return await connection.UpdateAsync(contact);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            var param = new { id };
             var sql = "DELETE FROM Contact WHERE ID = @id";
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            await connection.ExecuteAsync(sql.ToString(), new { id });
+            var result = await connection.ExecuteAsync(sql, param);
+
+            if (result <= 0)
+                return false;
+            else
+                return true;
         }
-
-        //public async Task<IEnumerable<Contact>> GetAllAsync(int pageNumber, int quantityItemsList)
-        //{
-        //    var param = new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList };
-        //    var query = @"SELECT * 
-        //                  FROM Contact AS c
-        //                  LEFT JOIN Company AS co ON  co.Id =c.CompanyId
-        //                  JOIN ContactBook AS cb ON cb.Id = c.ContactBookId
-        //                  LIMIT @quantityItemsList OFFSET @OffSet;";
-
-        //    using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-
-        //    var result = await connection.QueryAsync<Contact, Company, ContactBook, Contact>(query,
-        //        (contact, company, contactBook) =>
-        //        {
-        //            contact.Company = company;
-        //            contact.ContactBook = contactBook;
-        //            return contact;
-        //        }, param);
-
-        //    return result;
-        //}
 
         public async Task<Contact> GetAsync(int id)
         {
@@ -114,6 +98,8 @@ namespace TesteBackendEnContact.Repository
                         LEFT JOIN Company AS co ON  co.Id = c.CompanyId 
                         JOIN ContactBook AS cb ON cb.Id = c.ContactBookId 
                         WHERE LOWER(c.Name) || LOWER(c.Phone) || LOWER(c.Email) || LOWER(c.Address) || LOWER(co.Name) LIKE '%'||@param||'%'
+                        OR
+                        LOWER(c.Name) || LOWER(c.Phone) || LOWER(c.Email) || LOWER(c.Address) LIKE '%'||@param||'%'
                         LIMIT @quantityItemsList OFFSET @OffSet;
                         SELECT COUNT(1) FROM Contact AS c 
                         LEFT JOIN Company AS co ON  co.Id = c.CompanyId 
@@ -136,19 +122,6 @@ namespace TesteBackendEnContact.Repository
             var totalPages = Math.Ceiling(totalRows / quantityItemsList);
 
             return new Pagination<Contact>(totalRows, totalPages, contacts);
-
-
-            //using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-
-            //var result = await connection.QueryAsync<Contact, Company, ContactBook, Contact>(query,
-            //    (contact, company, contactBook) =>
-            //    {
-            //        contact.Company = company;
-            //        contact.ContactBook = contactBook;
-            //        return contact;
-            //    }, parameter);
-
-            //return result;
         }
 
         public async Task<Pagination<Contact>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList)
@@ -174,7 +147,7 @@ namespace TesteBackendEnContact.Repository
                 });
 
             var totalRows = result.ReadFirst<double>();
-            var totalPages = Math.Ceiling(totalRows / quantityItemsList); ;
+            var totalPages = Math.Ceiling(totalRows / quantityItemsList); 
 
 
             return new Pagination<Contact>(totalRows, totalPages, contacts);
@@ -224,6 +197,38 @@ namespace TesteBackendEnContact.Repository
                           NULLS LAST
                           LIMIT @quantityItemsList OFFSET @OffSet;
                           SELECT COUNT(1) FROM Contact WHERE ContactBookId = @contactBookId;";
+
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+
+            using var result = await connection.QueryMultipleAsync(query, param).ConfigureAwait(false);
+
+            var contacts = result.Read<Contact, Company, ContactBook, Contact>(
+                (contact, company, contactBook) =>
+                {
+                    contact.Company = company;
+                    contact.ContactBook = contactBook;
+                    return contact;
+                });
+
+            var totalRows = result.ReadFirst<double>();
+            var totalPages = Math.Ceiling(totalRows / quantityItemsList); ;
+
+            return new Pagination<Contact>(totalRows, totalPages, contacts);
+        }
+
+        public async Task<Pagination<Contact>> GetAllByContactBookIdAndCompanyIdPaginatedAsync(int contactBookId, int companyId, int pageNumber, int quantityItemsList)
+        {
+            var param = new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList, contactBookId, companyId };
+
+            var query = @"SELECT * 
+                          FROM Contact AS c
+                          LEFT JOIN Company AS co ON  co.Id = c.CompanyId
+                          JOIN ContactBook AS cb ON cb.Id = c.ContactBookId
+                          WHERE c.ContactBookId = @contactBookId AND c.CompanyId = @companyId
+                          ORDER BY c.CompanyId 
+                          NULLS LAST
+                          LIMIT @quantityItemsList OFFSET @OffSet;
+                          SELECT COUNT(1) FROM Contact WHERE ContactBookId = @contactBookId AND CompanyId = @companyId;";
 
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 

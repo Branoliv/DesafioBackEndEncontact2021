@@ -15,6 +15,7 @@ namespace TesteBackendEnContact.Repository
     {
         private readonly DatabaseConfig databaseConfig;
 
+
         public ContactBookRepository(DatabaseConfig databaseConfig)
         {
             this.databaseConfig = databaseConfig;
@@ -33,23 +34,26 @@ namespace TesteBackendEnContact.Repository
             return await connection.UpdateAsync(contactBook);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
-
-            // TODO 
             var sql = "DELETE FROM ContactBook  WHERE Id = @id";
 
-            await connection.ExecuteAsync(sql.ToString(), new { id });
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+
+            var result = await connection.ExecuteAsync(sql.ToString(), new { id });
+
+            if (result <= 0)
+                return false;
+            else
+                return true;
         }
 
         public async Task<IEnumerable<ContactBook>> GetAllAsync(int pageNumber, int quantityItemsList)
         {
-            //var query = string.Format("SELECT {0} FROM (SELECT ROW_NUMBER() OVER (ORDER BY {2}) AS Row, {0} FROM {3} {4}) AS Paged ", columns, pageSize, orderBy, TableName, where);
+            var query = "SELECT * FROM ContactBook LIMIT @quantityItemsList OFFSET @OffSet;";
+
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            
-            var query = "SELECT * FROM ContactBook LIMIT @quantityItemsList OFFSET @OffSet;";
             var result = await connection.QueryAsync<ContactBook>(query, new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList });
 
             return result;
@@ -57,9 +61,10 @@ namespace TesteBackendEnContact.Repository
 
         public async Task<ContactBook> GetAsync(int id)
         {
+            var query = "SELECT * FROM ContactBook WHERE Id = @id";
+
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
-            var query = "SELECT * FROM ContactBook WHERE Id = @id";
             var result = await connection.QuerySingleOrDefaultAsync<ContactBook>(query, new { id });
 
             return result;
@@ -68,9 +73,9 @@ namespace TesteBackendEnContact.Repository
         public async Task<ContactBook> GetAsync(string contactBookName)
         {
             var param = new { contactBookName };
-            
-            var query = @"SELECT * FROM ContactBook WHERE LOWER(Name) LIKE @contactBookName";
-            
+
+            var query = @"SELECT * FROM ContactBook WHERE LOWER(Name) LIKE LOWER(@contactBookName)";
+
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
             var result = await connection.QueryAsync<ContactBook>(query, param);
@@ -78,7 +83,7 @@ namespace TesteBackendEnContact.Repository
             return result.FirstOrDefault();
         }
 
-        public async Task<Pagination<ContactBook>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<ContactBook>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList)
         {
             var param = new { OffSet = (pageNumber - 1) * quantityItemsList, quantityItemsList };
 

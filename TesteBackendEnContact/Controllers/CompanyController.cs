@@ -55,9 +55,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(companyDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -107,9 +117,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(companyDTOResponse);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -128,9 +148,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok();
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -143,17 +173,36 @@ namespace TesteBackendEnContact.Controllers
         [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
         public async Task<ActionResult<PaginationDTO<CompanyDTO>>> GetAllCompanysAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
         {
+            var inicio = DateTime.Now;
             try
             {
-                var companysPaginated = await _companyService.GetAllPaginationAsync(pageNumber, quantityItemsList);
+                var companysPaginated = await _companyService.GetAllPaginatedAsync(pageNumber, quantityItemsList);
 
                 var paginationDTO = _mapper.Map<PaginationDTO<CompanyDTO>>(companysPaginated);
 
                 return Ok(paginationDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
+            }
+            finally
+            {
+                var final = DateTime.Now;
+
+                var diff = final.Subtract(inicio);
+
+                _logger.LogInformation($"======= Tempo decorrido: {diff.TotalMilliseconds}");
             }
         }
     }

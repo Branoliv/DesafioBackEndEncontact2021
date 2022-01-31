@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TesteBackendEnContact.Core.Domain.Entities;
 using TesteBackendEnContact.Core.Interface.Services;
@@ -13,7 +12,7 @@ namespace TesteBackendEnContact.Core.Services
         private readonly IContactRepository _contactRepository;
 
 
-        public CompanyService(ICompanyRepository companyRepository,  IContactRepository contactRepository)
+        public CompanyService(ICompanyRepository companyRepository, IContactRepository contactRepository)
         {
             _companyRepository = companyRepository;
             _contactRepository = contactRepository;
@@ -25,25 +24,16 @@ namespace TesteBackendEnContact.Core.Services
             var companyNameExist = await _companyRepository.GetAsync(company.Name);
 
             if (companyNameExist != null)
-                throw new Exception("Existe uma empresa com esse nome.");
+                throw new ArgumentException("Existe uma empresa com esse nome.");
 
-            //var contactBook = await _contactBookService.FindById(company.ContactBookId);
+            //var newcompany = new Company(company.Name);
 
-            //if (contactBook == null)
-            //    return null;
-
-            var newcompany = new Company(company.Name);
-
-            var resultId = await _companyRepository.InsertAsync(newcompany);
+            var resultId = await _companyRepository.InsertAsync(company);
 
             if (resultId <= 0)
-            {
                 return null;
-            }
 
-            var companyResult = await _companyRepository.GetAsync(resultId);
-
-            return companyResult;
+            return await _companyRepository.GetAsync(resultId);
         }
 
         public async Task<int> CountContactBookInCompanys(int contactBookId)
@@ -51,19 +41,19 @@ namespace TesteBackendEnContact.Core.Services
             return await _companyRepository.CountContactBookInCompanys(contactBookId);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
+            var company = await _companyRepository.GetAsync(id);
+
+            if (company == null)
+                return false;
+
             var companyInContacts = await _contactRepository.CountCompanyInContacts(id);
 
             if (companyInContacts > 0)
                 throw new Exception("Existem registros com essa empresa.");
 
-            var company = await _companyRepository.GetAsync(id);
-
-            if (company == null)
-                return;
-
-            await _companyRepository.DeleteAsync(id);
+           return await _companyRepository.DeleteAsync(id);
         }
 
         public async Task<Company> FindAsync(string name)
@@ -76,9 +66,9 @@ namespace TesteBackendEnContact.Core.Services
             return await _companyRepository.GetAsync(id);
         }
 
-        public async Task<Pagination<Company>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<Company>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList)
         {
-            return await _companyRepository.GetAllPaginationAsync(pageNumber, quantityItemsList);
+            return await _companyRepository.GetAllPaginatedAsync(pageNumber, quantityItemsList);
         }
 
         public async Task<Company> UpdateAsync(Company company)
@@ -91,7 +81,7 @@ namespace TesteBackendEnContact.Core.Services
             var companyNameExist = await _companyRepository.GetAsync(company.Name);
 
             if (companyNameExist != null)
-                throw new Exception("Existe uma empresa com esse nome.");
+                throw new ArgumentException("Existe uma empresa com esse nome.");
 
             var updateResult = await _companyRepository.UpdateAsync(company);
 

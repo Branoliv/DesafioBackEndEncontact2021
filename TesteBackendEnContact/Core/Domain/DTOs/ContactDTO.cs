@@ -5,8 +5,6 @@ namespace TesteBackendEnContact.Core.Domain.DTOs
 {
     public class ContactDTO
     {
-        // protected ContactDTO() { }
-
         public ContactDTO(int id, string name, string phone, string email, int companyId, int contactBookId, string address)
         {
             Id = id;

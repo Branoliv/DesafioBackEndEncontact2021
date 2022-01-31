@@ -58,9 +58,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Created("", contactDTOResponse);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch(ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -85,9 +95,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactDTOResponse);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -117,9 +137,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactDTOResponse);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -138,9 +168,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok();
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -156,6 +196,7 @@ namespace TesteBackendEnContact.Controllers
         [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
         public async Task<ActionResult<Pagination<ContactDTO>>> GetAsync(string param, [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
         {
+            var inicio = DateTime.Now;
             try
             {
                 var contacts = await _contactService.GetAsync(param, pageNumber, quantityItemsList);
@@ -167,9 +208,27 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactsDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
+            }
+            finally
+            {
+                var final = DateTime.Now;
+
+                var diff = final.Subtract(inicio);
+
+                _logger.LogInformation($"======= Tempo decorrido: {diff.TotalMilliseconds}");
             }
         }
 
@@ -184,7 +243,7 @@ namespace TesteBackendEnContact.Controllers
         {
             try
             {
-                var contactsPaginated = await _contactService.GetAllPaginationAsync(pageNumber, quantityItemsList);
+                var contactsPaginated = await _contactService.GetAllPaginatedAsync(pageNumber, quantityItemsList);
 
                 if (!contactsPaginated.ListResult.Any())
                     return NoContent();
@@ -193,9 +252,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(paginationDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -223,9 +292,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactsPaginatedDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -252,9 +331,59 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactsPaginatedDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
+            }
+        }
+
+        /// <summary>
+        /// Lista todos os contatos cadastrados para um determinada agenda com paginação.
+        /// </summary>
+        /// <param name="contactBookId">Identificador referente ao registro a ser pesquisado</param>
+        /// <param name="companyId">Identificador referente ao registro a ser pesquisado</param>
+        /// <param name="pageNumber">Número da pagina</param>
+        /// <param name="quantityItemsList">Quantidade e itens a ser retornado na lista.</param>
+        /// <returns>Retorna uma lista de ContactDTO se houver algum resgistro paginado.</returns>
+        [HttpGet("contactbook/{contactBookId:int}/company/{companyId}")]
+        [SwaggerResponse(statusCode: 200, description: "Requisição concluída com sucesso. Retorna uma lista do objeto ContactDTO.", Type = typeof(IEnumerable<ContactDTO>))]
+        [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
+        public async Task<ActionResult<PaginationDTO<ContactDTO>>> GetAllByContactBookIdAndCompanyIdPaginatedAsync(int contactBookId,int companyId, [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
+        {
+            try
+            {
+                var contactsPaginated = await _contactService.GetAllByContactBookIdAndCompanyIdPaginatedAsync(contactBookId, companyId, pageNumber, quantityItemsList);
+
+                if (!contactsPaginated.ListResult.Any())
+                    return NoContent();
+
+                var contactsPaginatedDTO = _mapper.Map<PaginationDTO<ContactDTO>>(contactsPaginated);
+
+                return Ok(contactsPaginatedDTO);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
     }

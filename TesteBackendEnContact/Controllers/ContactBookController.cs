@@ -54,9 +54,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Created("", contactBookDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -81,9 +91,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactBookDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -113,9 +133,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactBookDTOResponse);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -134,9 +164,19 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok();
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
         }
 
@@ -149,9 +189,10 @@ namespace TesteBackendEnContact.Controllers
         [SwaggerResponse(statusCode: 204, description: "Requisição concluída com sucesso. Não há nenhum resgistro a ser retornado.")]
         public async Task<ActionResult<PaginationDTO<ContactBookDTO>>> GetAllContactBooksAsync([FromQuery, Range(1, int.MaxValue)] int pageNumber = 1, [FromQuery, Range(1, 50)] int quantityItemsList = 5)
         {
+            var inicio = DateTime.Now;
             try
             {
-                var contactBooksPaginated = await _contactBookService.GetAllPaginationAsync(pageNumber, quantityItemsList);
+                var contactBooksPaginated = await _contactBookService.GetAllPaginatedAsync(pageNumber, quantityItemsList);
 
                 if (!contactBooksPaginated.ListResult.Any())
                     return NoContent();
@@ -160,9 +201,27 @@ namespace TesteBackendEnContact.Controllers
 
                 return Ok(contactBooksPaginatedDTO);
             }
-            catch (Exception ex)
+            catch (ArgumentNullException ex)
             {
                 return BadRequest(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
+            }
+            finally
+            {
+                var final = DateTime.Now;
+
+                var diff = final.Subtract(inicio);
+
+                _logger.LogInformation($"======= Tempo decorrido: {diff.TotalMilliseconds}");
             }
         }
     }

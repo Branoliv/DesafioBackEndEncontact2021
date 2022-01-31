@@ -14,9 +14,6 @@ using TesteBackendEnContact.Core.Interface.Services;
 
 namespace TesteBackendEnContact.Controllers
 {
-    /// <summary>
-    /// Para todos uploads do arquivo .csv, devem seguir o seguinte padrão de Colunas: name;phone;email;companyId;companyNam;contactBookId;contactBookName;address
-    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     [SwaggerResponse(statusCode: 400, description: "Ocorreu um erro na requisição.", Type = typeof(string))]
@@ -52,16 +49,16 @@ namespace TesteBackendEnContact.Controllers
                 if (string.IsNullOrEmpty(csvFile))
                     return NoContent();
 
-
                 var file = File(Encoding.UTF8.GetBytes(csvFile), "text/csv", "contacts.csv");
 
                 return file;
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
-
         }
 
         /// <summary>
@@ -88,7 +85,7 @@ namespace TesteBackendEnContact.Controllers
             {
                 var contactsSaveResult = await _csvService.UploadContactCsvFileAsync(file);
 
-                if (contactsSaveResult.Count() <= 0)
+                if (!contactsSaveResult.Any())
                     return UnprocessableEntity("Nem todos contatos foram salvos.");
 
                 IEnumerable<ContactDTO> contactsResult = _mapper.Map<List<ContactDTO>>(contactsSaveResult);
@@ -97,7 +94,9 @@ namespace TesteBackendEnContact.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
             finally
             {
@@ -134,7 +133,7 @@ namespace TesteBackendEnContact.Controllers
             {
                 var contactBooksSaveResult = await _csvService.UploadContactCsvFileAsync(file);
 
-                if (contactBooksSaveResult.Count() <= 0)
+                if (!contactBooksSaveResult.Any())
                     return UnprocessableEntity("Nem todos contatos foram salvos.");
 
                 IEnumerable<ContactBookDTO> contactBooksResult = _mapper.Map<List<ContactBookDTO>>(contactBooksSaveResult);
@@ -143,7 +142,9 @@ namespace TesteBackendEnContact.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
             finally
             {
@@ -179,7 +180,7 @@ namespace TesteBackendEnContact.Controllers
             {
                 var companiesSaveResult = await _csvService.UploadContactCsvFileAsync(file);
 
-                if (companiesSaveResult.Count() <= 0)
+                if (!companiesSaveResult.Any())
                     return UnprocessableEntity("Nem todos contatos foram salvos.");
 
                 IEnumerable<CompanyDTO> contactBooksResult = _mapper.Map<List<CompanyDTO>>(companiesSaveResult);
@@ -188,7 +189,9 @@ namespace TesteBackendEnContact.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogTrace($"====={ex.StackTrace}");
+                _logger.LogError(ex.Message);
+                return BadRequest("Desculpe! Ocorreu um erro!");
             }
             finally
             {
@@ -199,6 +202,5 @@ namespace TesteBackendEnContact.Controllers
                 _logger.LogInformation($"======= Tempo decorrido: {diff}");
             }
         }
-
     }
 }

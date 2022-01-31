@@ -10,14 +10,12 @@ namespace TesteBackendEnContact.Core.Services
     public class ContactBookService : IContactBookService
     {
         private readonly IContactBookRepository _contactBookRepository;
-        private readonly ICompanyRepository _companyRepository;
         private readonly IContactRepository _contactRepository;
 
 
-        public ContactBookService(IContactBookRepository contactBookRepository, ICompanyRepository companyRepository, IContactRepository contactRepository)
+        public ContactBookService(IContactBookRepository contactBookRepository, IContactRepository contactRepository)
         {
             _contactBookRepository = contactBookRepository;
-            _companyRepository = companyRepository;
             _contactRepository = contactRepository;
         }
 
@@ -27,10 +25,10 @@ namespace TesteBackendEnContact.Core.Services
             if (contactBook == null)
                 return null;
 
-            var contactBookExist = await _contactBookRepository.GetAsync(contactBook.Name.ToLower());
+            var contactBookExist = await _contactBookRepository.GetAsync(contactBook.Name);
 
-            if(contactBookExist != null)
-                throw new Exception("Existe uma agenda com esse nome.");
+            if (contactBookExist != null)
+                throw new ArgumentException("Existe uma agenda com esse nome.");
 
             var resultId = await _contactBookRepository.InsertAsync(contactBook);
 
@@ -42,19 +40,19 @@ namespace TesteBackendEnContact.Core.Services
             return contactBookResponse;
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var contactBook = await _contactBookRepository.GetAsync(id);
 
             if (contactBook == null)
-                return;
+                return false;
 
             var contactBookInContacts = await _contactRepository.CountContactBookInContacts(id);
 
             if (contactBookInContacts > 0)
                 throw new Exception("Existem registros com essa agenda.");
 
-            await _contactBookRepository.DeleteAsync(id);
+            return await _contactBookRepository.DeleteAsync(id);
         }
 
         public async Task<ContactBook> FindAsync(string name)
@@ -73,9 +71,9 @@ namespace TesteBackendEnContact.Core.Services
             return cbR;
         }
 
-        public async Task<Pagination<ContactBook>> GetAllPaginationAsync(int pageNumber, int quantityItemsList)
+        public async Task<Pagination<ContactBook>> GetAllPaginatedAsync(int pageNumber, int quantityItemsList)
         {
-            return await _contactBookRepository.GetAllPaginationAsync(pageNumber, quantityItemsList);
+            return await _contactBookRepository.GetAllPaginatedAsync(pageNumber, quantityItemsList);
         }
 
         public async Task<ContactBook> UpdateAsync(ContactBook contactBook)
@@ -88,7 +86,7 @@ namespace TesteBackendEnContact.Core.Services
             var contactBookNameExist = await _contactBookRepository.GetAsync(contactBook.Name.ToLower());
 
             if (contactBookNameExist != null)
-                throw new Exception("Existe uma agenda com esse nome.");
+                throw new ArgumentException("Existe uma agenda com esse nome.");
 
             var updateResult = await _contactBookRepository.UpdateAsync(contactBook);
 
