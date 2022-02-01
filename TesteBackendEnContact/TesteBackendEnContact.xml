@@ -4,6 +4,13 @@
         <name>TesteBackendEnContact</name>
     </assembly>
     <members>
+        <member name="M:TesteBackendEnContact.Controllers.AuthController.AddAsync(TesteBackendEnContact.Core.Domain.DTOs.AddUserAuthDTO)">
+            <summary>
+            Cria um usuário
+            </summary>
+            <param name="addUserAuthDTO">Modelo de objeto addCompanyDTO a ser informado no corpo da requisição.</param>
+            <returns>Retorna o objeto resultante do registro.</returns>
+        </member>
         <member name="M:TesteBackendEnContact.Controllers.CompanyController.AddCompanyAsync(TesteBackendEnContact.Core.Domain.DTOs.AddCompanyDTO)">
             <summary>
             Cadastra uma nova empresa.

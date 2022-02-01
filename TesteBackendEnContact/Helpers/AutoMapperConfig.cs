@@ -20,6 +20,9 @@ namespace TesteBackendEnContact.Helpers
             CreateMap<UpdateContactDTO, Contact>();
             CreateMap<ContactDTO, Contact>();
 
+            CreateMap<AddUserAuthDTO, UserAuthentication>();
+            CreateMap<UserAuthDTO, UserAuthentication>();
+
             #endregion
 
             #region EntityToDto
@@ -27,6 +30,8 @@ namespace TesteBackendEnContact.Helpers
             CreateMap<Company, CompanyDTO>();
 
             CreateMap<ContactBook, ContactBookDTO>();
+
+            CreateMap<UserAuthentication, UserAuthDTO>();
 
             CreateMap<Contact, UpdateContactDTO>()
                 .ForMember(c => c.Id, map => map.MapFrom(cd => cd.Id))

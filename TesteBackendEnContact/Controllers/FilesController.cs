@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,8 +15,9 @@ using TesteBackendEnContact.Core.Interface.Services;
 
 namespace TesteBackendEnContact.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
+    [Route("api/[controller]")]
     [SwaggerResponse(statusCode: 400, description: "Ocorreu um erro na requisição.", Type = typeof(string))]
     public class FilesController : ControllerBase
     {
@@ -131,7 +133,7 @@ namespace TesteBackendEnContact.Controllers
 
             try
             {
-                var contactBooksSaveResult = await _csvService.UploadContactCsvFileAsync(file);
+                var contactBooksSaveResult = await _csvService.UploadContactBookCsvFileAsync(file);
 
                 if (!contactBooksSaveResult.Any())
                     return UnprocessableEntity("Nem todos contatos foram salvos.");
@@ -178,7 +180,7 @@ namespace TesteBackendEnContact.Controllers
 
             try
             {
-                var companiesSaveResult = await _csvService.UploadContactCsvFileAsync(file);
+                var companiesSaveResult = await _csvService.UploadCompanyCsvFileAsync(file);
 
                 if (!companiesSaveResult.Any())
                     return UnprocessableEntity("Nem todos contatos foram salvos.");

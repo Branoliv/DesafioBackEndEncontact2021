@@ -18,6 +18,7 @@ namespace TesteBackendEnContact.Core.Services
         private readonly IContactBookRepository _contactBookRepository;
         private readonly ICompanyRepository _companyRepository;
 
+
         public CsvService(IContactRepository contactRepository, IContactBookRepository contactBookRepository, ICompanyRepository companyRepository)
         {
             _contactRepository = contactRepository;
@@ -144,10 +145,18 @@ namespace TesteBackendEnContact.Core.Services
             {
                 try
                 {
-                    var responseAdd = await _contactRepository.InsertAsync(contact);
+                    if (contact.ContactBookId > 0)
+                    {
+                        var contactBookExist = await _contactBookRepository.GetAsync(contact.ContactBookId);
 
-                    if (responseAdd >0)
-                        contactsSaveResult.Add(new Contact(responseAdd,contact.Name, contact.Phone, contact.Email, contact.CompanyId, contact.ContactBookId, contact.Address));
+                        if (contactBookExist != null)
+                        {
+                            var responseAdd = await _contactRepository.InsertAsync(contact);
+
+                            if (responseAdd > 0)
+                                contactsSaveResult.Add(new Contact(responseAdd, contact.Name, contact.Phone, contact.Email, contact.CompanyId, contact.ContactBookId, contact.Address));
+                        }
+                    }
                 }
                 catch
                 {
